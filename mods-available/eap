@@ -24,7 +24,7 @@ eap {
 	#  then that EAP type takes precedence over the
 	#  default type configured here.
 	#
-	default_eap_type = md5
+	default_eap_type = ttls
 
 	#  A list is maintained to correlate EAP-Response
 	#  packets with EAP-Request packets.  After a
@@ -77,8 +77,8 @@ eap {
 	#  for wireless connections.  It is insecure, and does
 	#  not provide for dynamic WEP keys.
 	#
-	md5 {
-	}
+#	md5 {
+#	}
 
 
 	#  EAP-pwd -- secure password-based authentication
@@ -115,8 +115,8 @@ eap {
 	#  User-Password, or the NT-Password attributes.
 	#  'System' authentication is impossible with LEAP.
 	#
-	leap {
-	}
+#	leap {
+#	}
 
 
 	#  EAP-GTC -- Generic Token Card
@@ -130,7 +130,7 @@ eap {
 	#  the users password will go over the wire in plain-text,
 	#  for anyone to see.
 	#
-	gtc {
+#	gtc {
 		#  The default challenge, which many clients
 		#  ignore..
 		#
@@ -148,8 +148,8 @@ eap {
 		#  configured for the request, and do the
 		#  authentication itself.
 		#
-		auth_type = PAP
-	}
+#		auth_type = PAP
+#	}
 
 
 	#  Common TLS configuration for TLS-based EAP types
@@ -601,14 +601,14 @@ eap {
 			#  Deleting the entire "ocsp" subsection
 			#  also disables ocsp checking
 			#
-			enable = no
+			enable = yes
 
 			#  The OCSP Responder URL can be automatically
 			#  extracted from the certificate in question.
 			#  To override the OCSP Responder URL set
 			#  "override_cert_url = yes".
 			#
-			override_cert_url = yes
+			override_cert_url = no
 
 			#  If the OCSP Responder address is not extracted from
 			#  the certificate, the URL can be defined here.
@@ -699,7 +699,7 @@ eap {
 		#  EAP conversation, then this configuration entry is
 		#  ignored.
 		#
-		default_eap_type = md5
+		default_eap_type = mschapv2
 
 		#  The tunneled authentication request does not usually
 		#  contain useful attributes like 'Calling-Station-Id',
@@ -715,7 +715,7 @@ eap {
 		#
 		#  allowed values: {no, yes}
 		#
-		copy_request_to_tunnel = no
+		copy_request_to_tunnel = yes
 
 		#  As of version 3.0.5, this configuration item
 		#  is deprecated.  Instead, you should use
@@ -744,7 +744,7 @@ eap {
 		#
 		#  A virtual server MUST be specified.
 		#
-		virtual_server = "inner-tunnel"
+		virtual_server = "tuermeroam-inner"
 
 		#  This has the same meaning, and overwrites, the
 		#  same field in the "tls" configuration, above.
@@ -830,7 +830,7 @@ eap {
 		#  The PEAP module also has these configuration
 		#  items, which are the same as for TTLS.
 		#
-		copy_request_to_tunnel = no
+		copy_request_to_tunnel = yes
 
 		#  As of version 3.0.5, this configuration item
 		#  is deprecated.  Instead, you should use
@@ -856,7 +856,7 @@ eap {
 		#
 		#  A virtual server MUST be specified.
 		#
-		virtual_server = "inner-tunnel"
+		virtual_server = "tuermeroam-inner"
 
 		#  This option enables support for MS-SoH
 		#  see doc/SoH.txt for more info.
@@ -898,7 +898,7 @@ eap {
 	#  of MS-CHAPv2 in EAP by Cisco, which FreeRADIUS does not
 	#  currently support.
 	#
-	mschapv2 {
+#	mschapv2 {
 		#  Prior to version 2.1.11, the module never
 		#  sent the MS-CHAP-Error message to the
 		#  client.  This worked, but it had issues
@@ -923,7 +923,7 @@ eap {
 		#  identify it.
 		#
 	#	identity = "FreeRADIUS"
-	}
+#	}
 
 
 	#  EAP-FAST
