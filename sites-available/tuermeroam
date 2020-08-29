@@ -819,21 +819,21 @@ post-auth {
         Tunnel-Medium-Type := IEEE-802
     }
     # TODO check for MAC auth, check MAC, then set VLAN
-    switch &Realm {
+    switch &Stripped-User-Domain {
         case "oih.rwth-aachen.de" {
-            update { Tunnel-Private-Group-ID := 263 }
+            update reply { Tunnel-Private-Group-ID := 263 }
         }
         case "tvk.rwth-aachen.de" {
-            update { Tunnel-Private-Group-ID := 261 }
+            update reply { Tunnel-Private-Group-ID := 261 }
         }
         case "oph.rwth-aachen.de" {
-            update { Tunnel-Private-Group-ID := 262 }
+            update reply { Tunnel-Private-Group-ID := 262 }
         }
         case "weh.rwth-aachen.de" {
-            update { Tunnel-Private-Group-ID := 919 }
+            update reply { Tunnel-Private-Group-ID := 919 }
         }
         case "farue.rwth-aachen.de" {
-            update { Tunnel-Private-Group-ID := 264 }
+            update reply { Tunnel-Private-Group-ID := 264 }
         }
     }
 
