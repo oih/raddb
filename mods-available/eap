@@ -151,6 +151,8 @@ eap {
 #		auth_type = PAP
 #	}
 
+  # we include this so it's easier to modify for testing
+  $INCLUDE ../tls.conf
 
 	#  Common TLS configuration for TLS-based EAP types
 	#  ------------------------------------------------
@@ -180,7 +182,7 @@ eap {
 	#  ANYONE who has a certificate signed by them can
 	#  authenticate via EAP-TLS!  This is likely not what you want.
 	#
-	tls-config tls-common {
+	tls-config tls-common-default {
 		private_key_password = whatever
 		private_key_file = ${certdir}/server.pem
 
