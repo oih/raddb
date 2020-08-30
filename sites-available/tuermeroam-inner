@@ -131,7 +131,22 @@ authorize {
 
 # oih-api sql
     update control {
-        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE radius_user = '%{Stripped-User-Name}' AND status = 'active'}"
+        Oih-Api-User-Id = "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
+    }
+    if (&control:Oih-Api-User-Id == 0) {
+        # 0 = kein Ergebnis
+        reject
+    }
+    update control {
+        Oih-Api-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{Oih-Api-User-Id}}"
+    }
+    if (&control:Oih-Api-User-Status != "active") {
+        # gesperrte user
+        reject
+    }
+    update control {
+        # dies wird von eap benutzt
+        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE id = '%{Oih-Api-User-Id}'}"
     }
 
 	#
@@ -382,6 +397,12 @@ post-auth {
 		}
 	}
 
+    update control {
+        Oih-Api-User-Email = "%{sql:SELECT email FROM `user` WHERE id = '%{Oih-Api-User-Id}'}"
+        Oih-Api-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = '%{Oih-Api-User-Id}'}"
+        Oih-Api-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = '%{Oih-Api-User-Id}'}"
+        Oih-Api-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = '%{Oih-Api-User-Id}'}"
+    }
 	#
 	#  Access-Reject packets are sent through the REJECT sub-section of the
 	#  post-auth section.
@@ -391,7 +412,7 @@ post-auth {
 	#
 	Post-Auth-Type REJECT {
 		# log failed authentications in SQL, too.
-		-sql
+#		-sql
 		attr_filter.access_reject
 
 		#

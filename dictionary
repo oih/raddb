@@ -47,3 +47,10 @@
 #ATTRIBUTE	My-Local-String		3000	string
 #ATTRIBUTE	My-Local-IPAddr		3001	ipaddr
 #ATTRIBUTE	My-Local-Integer	3002	integer
+
+ATTRIBUTE   Oih-Api-User-Id         3000    integer
+ATTRIBUTE   Oih-Api-User-Firstname  3001    string
+ATTRIBUTE   Oih-Api-User-Lastname   3002    string
+ATTRIBUTE   Oih-Api-User-Email      3003    string
+ATTRIBUTE   Oih-Api-Room-Number     3004    integer
+ATTRIBUTE   Oih-Api-User-Status     3005    string
