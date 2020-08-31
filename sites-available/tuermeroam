@@ -834,6 +834,9 @@ post-auth {
         case "weh.rwth-aachen.de" {
             update reply { Tunnel-Private-Group-ID := 919 }
         }
+        case "weh.ac" {
+            update reply { Tunnel-Private-Group-ID := 116 }
+        }
         case "farue.rwth-aachen.de" {
             update reply { Tunnel-Private-Group-ID := 264 }
         }
