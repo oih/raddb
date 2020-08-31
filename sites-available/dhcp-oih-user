@@ -80,7 +80,7 @@ listen {
 	#  it to 67 on a production network unless you really know
 	#  what you're doing. Even if nothing is configured below, the
 	#  server may still NAK legitimate responses from clients.
-	port = 67
+	port = 6700 # test
 
 	#  Interface name we are listening on. See comments above.
 #	interface = lo0
@@ -104,6 +104,13 @@ listen {
 	# for newly allocated IPs
 }
 
+listen {
+	type = dhcp
+	ipaddr = 10.148.0.5
+	port = 6700 # test
+	broadcast = yes
+}
+
 #  Packets received on the socket will be processed through one
 #  of the following sections, named after the DHCP packet type.
 #  See dictionary.dhcp for the packet types.
@@ -116,6 +123,7 @@ listen {
 #  section for a response to be sent.
 
 dhcp DHCP-Discover {
+    set-oih-api-mac-dhcp
 
 	#  Set the type of packet to send in reply.
 	#
@@ -135,14 +143,13 @@ dhcp DHCP-Discover {
 	       DHCP-Message-Type = DHCP-Offer
 	}
 
-	#  The contents here are invented.  Change them!
 	update reply {
-		&DHCP-Domain-Name-Server = 127.0.0.1
-		&DHCP-Domain-Name-Server = 127.0.0.2
-		&DHCP-Subnet-Mask = 255.255.255.0
-		&DHCP-Router-Address = 192.0.2.1
-		&DHCP-IP-Address-Lease-Time = 86400
-		&DHCP-DHCP-Server-Identifier = 192.0.2.1
+		&DHCP-Domain-Name-Server = 134.130.4.1
+		&DHCP-Domain-Name-Server = 134.130.5.1
+		&DHCP-Subnet-Mask = 255.255.254.0
+		&DHCP-Router-Address = 137.226.148.1
+		&DHCP-IP-Address-Lease-Time = 7200
+		&DHCP-DHCP-Server-Identifier = 137.226.148.5 # get this from the ipaddr variable somehow
 	}
 
 	#  Do a simple mapping of MAC to assigned IP.
@@ -175,20 +182,20 @@ dhcp DHCP-Discover {
 }
 
 dhcp DHCP-Request {
+    set-oih-api-mac-dhcp
 
 	# Response packet type. See DHCP-Discover section above.
 	update reply {
 	       &DHCP-Message-Type = DHCP-Ack
 	}
 
-	#  The contents here are invented.  Change them!
 	update reply {
-		&DHCP-Domain-Name-Server = 127.0.0.1
-		&DHCP-Domain-Name-Server = 127.0.0.2
-		&DHCP-Subnet-Mask = 255.255.255.0
-		&DHCP-Router-Address = 192.0.2.1
-		&DHCP-IP-Address-Lease-Time = 86400
-		&DHCP-DHCP-Server-Identifier = 192.0.2.1
+		&DHCP-Domain-Name-Server = 134.130.4.1
+		&DHCP-Domain-Name-Server = 134.130.5.1
+		&DHCP-Subnet-Mask = 255.255.254.0
+		&DHCP-Router-Address = 137.226.148.1
+		&DHCP-IP-Address-Lease-Time = 7200
+		&DHCP-DHCP-Server-Identifier = 137.226.148.5 # get this from the ipaddr variable somehow
 	}
 
 	#  Do a simple mapping of MAC to assigned IP.
@@ -269,6 +276,7 @@ dhcp DHCP-Lease-Query {
 
 	# has MAC, asking for IP, etc.
 	if (&DHCP-Client-Hardware-Address) {
+        set-oih-api-mac-dhcp
 		# look up MAC in database
 	}
 

@@ -1,0 +1,59 @@
+# just for -X debugging, never respond to anything
+server dhcp {
+    listen {
+        type = dhcp
+        ipaddr = 0.0.0.0
+#	    src_ipaddr = 127.0.0.1
+        port = 67
+#	    interface = lo0
+        broadcast = yes
+    }
+
+    dhcp DHCP-Discover {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+
+    dhcp DHCP-Request {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+
+    dhcp DHCP-Decline {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+
+    dhcp DHCP-Inform {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+
+    dhcp DHCP-Release {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+
+    dhcp DHCP-Lease-Query {
+        set-oih-api-mac-dhcp
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        reject
+    }
+}

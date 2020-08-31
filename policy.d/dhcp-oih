@@ -1,0 +1,21 @@
+# WORK IN PROGRESS
+dhcp-oih-user-handle-request {
+    set-oih-api-mac-dhcp
+
+    update reply {
+        &DHCP-Domain-Name-Server = 134.130.4.1
+        &DHCP-Domain-Name-Server = 134.130.5.1
+        &DHCP-Subnet-Mask = 255.255.254.0
+        &DHCP-Router-Address = 137.226.148.1
+        &DHCP-IP-Address-Lease-Time = 7200
+        &DHCP-DHCP-Server-Identifier = 137.226.148.5 # get this from the ipaddr variable somehow
+    }
+
+    sqlippool
+
+	if (ok) {
+		update reply {
+			&DHCP-Your-IP-Address = "%{reply:Framed-IP-Address}"
+		}
+	}
+}
