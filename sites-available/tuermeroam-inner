@@ -428,8 +428,13 @@ post-auth {
         }
     }
     else {
-        update control {
-            OIH-API-Return = "%{sql:UPDATE `device` SET user = %{control:OIH-API-User-Id} WHERE id = %{control:OIH-API-Device-Id}}"
+        if (&control:OIH-API-User-Id != "%{sql:SELECT user FROM `device` WHERE id = %{control:OIH-API-Device-Id}}") {
+            update control {
+                OIH-API-Return = "%{sql:UPDATE `device` SET user = %{control:OIH-API-User-Id}, nat = 1, description = '' WHERE id = %{control:OIH-API-Device-Id}}"
+            }
+            update control {
+                OIH-API-Return = "%{sql:UPDATE `ipv4` SET device = NULL WHERE device = %{control:OIH-API-Device-Id}}"
+            }
         }
     }
     # this has to be separate, otherwise control:OIH-API-Device-Id won't be expanded correctly.
