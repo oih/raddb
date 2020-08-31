@@ -866,6 +866,9 @@ post-auth {
 		# rejected by policy instead of because of an
 		# authentication failure
 		eap
+        #update reply {
+        #    Reply-Message = "teestot"
+        #}
 
 		#  Remove reply message if the response contains an EAP-Message
 #		remove_reply_message_if_eap

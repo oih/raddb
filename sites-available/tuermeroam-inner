@@ -133,15 +133,24 @@ authorize {
     update control {
         Oih-Api-User-Id = "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
     }
+
+    # TODO die Reihenfolge hier ist irgendwie komisch. Wenn User-Name korrekt, aber das Passwort falsch ist, wird die block_message ausgegeben.
     if (&control:Oih-Api-User-Id == 0) {
         # 0 = kein Ergebnis
+        update outer.reply {
+            Reply-Message = "Wrong username or password"
+        }
         reject
     }
     update control {
         Oih-Api-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        Oih-Api-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
     }
     if (&control:Oih-Api-User-Status != "active") {
         # gesperrte user
+        update outer.reply {
+            Reply-Message = &control:Oih-Api-User-Block-Message
+        }
         reject
     }
     update control {
@@ -398,27 +407,28 @@ post-auth {
 	}
 
     update control {
-        Oih-Api-User-Email = "%{sql:SELECT email FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        Oih-Api-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        Oih-Api-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        # we don't need any of these (maybe the room number for whatever)
+        #Oih-Api-User-Email = "%{sql:SELECT email FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        #Oih-Api-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        #Oih-Api-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
         Oih-Api-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
         Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
     }
     
     if (&control:Oih-Api-Device-Id == 0) {
         update control {
-            Oih-Api-Device-Id = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{Calling-Station-Id}', 1, %{control:Oih-Api-User-Id})}"
+            Oih-Api-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{Calling-Station-Id}', 1, %{control:Oih-Api-User-Id})}"
         }
     }
     else {
         update control {
-            Oih-Api-Device-Id = "%{sql:UPDATE `device` SET user = %{control:Oih-Api-User-Id}}"
+            Oih-Api-Return = "%{sql:UPDATE `device` SET user = %{control:Oih-Api-User-Id}}"
         }
     }
     update control {
         Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
     }
-    # this has to be separate, otherwise control:Oih-Api-Device-Ide won't be expanded correctly.
+    # this has to be separate, otherwise control:Oih-Api-Device-Id won't be expanded correctly.
     update control {
         Oih-Api-Device-Nat = "%{sql:SELECT nat FROM `device` WHERE id = %{control:Oih-Api-Device-Id}}"
     }
@@ -437,7 +447,7 @@ post-auth {
 
         # delete device from db
         update control {
-            Oih-Api-Device-Id = "%{sql:DELETE FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
+            Oih-Api-Return = "%{sql:DELETE FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
         }
 
 		#
