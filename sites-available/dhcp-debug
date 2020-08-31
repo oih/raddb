@@ -10,7 +10,8 @@ server dhcp {
     }
 
     dhcp DHCP-Discover {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -18,7 +19,8 @@ server dhcp {
     }
 
     dhcp DHCP-Request {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -26,7 +28,8 @@ server dhcp {
     }
 
     dhcp DHCP-Decline {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -34,7 +37,8 @@ server dhcp {
     }
 
     dhcp DHCP-Inform {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -42,7 +46,8 @@ server dhcp {
     }
 
     dhcp DHCP-Release {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -50,7 +55,8 @@ server dhcp {
     }
 
     dhcp DHCP-Lease-Query {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
+        oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }

@@ -129,13 +129,16 @@ authorize {
         }
     }
 
+    # set OIH-API-Device-MAC to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
+    set_oih_api_mac_radius
+
 # oih-api sql
     update control {
-        Oih-Api-User-Id = "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
+        OIH-API-User-Id = "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
     }
 
     # TODO die Reihenfolge hier ist irgendwie komisch. Wenn User-Name korrekt, aber das Passwort falsch ist, wird die block_message ausgegeben.
-    if (&control:Oih-Api-User-Id == 0) {
+    if (&control:OIH-API-User-Id == 0) {
         # 0 = kein Ergebnis
         update outer.reply {
             Reply-Message = "Wrong username or password"
@@ -143,19 +146,19 @@ authorize {
         reject
     }
     update control {
-        Oih-Api-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        Oih-Api-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        OIH-API-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        OIH-API-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
     }
-    if (&control:Oih-Api-User-Status != "active") {
+    if (&control:OIH-API-User-Status != "active") {
         # gesperrte user
         update outer.reply {
-            Reply-Message = &control:Oih-Api-User-Block-Message
+            Reply-Message = &control:OIH-API-User-Block-Message
         }
         reject
     }
     update control {
         # dies wird von eap benutzt
-        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
     }
 
 	#
@@ -327,6 +330,7 @@ session {
 #  the ONLY safe way is to set "use_tunneled_reply = yes", and
 #  then update the inner-tunnel reply.
 post-auth {
+    set_oih_api_mac_radius
 	#  If you want privacy to remain, see the
 	#  Chargeable-User-Identity attribute from RFC 4372.
 	#  If you want to use it just uncomment the line below.
@@ -408,30 +412,31 @@ post-auth {
 
     update control {
         # we don't need any of these (maybe the room number for whatever)
-        #Oih-Api-User-Email = "%{sql:SELECT email FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        #Oih-Api-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        #Oih-Api-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        Oih-Api-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
-        Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
+        #OIH-API-User-Email = "%{sql:SELECT email FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        #OIH-API-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        #OIH-API-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        OIH-API-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
     }
     
-    if (&control:Oih-Api-Device-Id == 0) {
+    if (&control:OIH-API-Device-Id == 0) {
         update control {
-            Oih-Api-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{Calling-Station-Id}', 1, %{control:Oih-Api-User-Id})}"
+            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, %{control:OIH-API-User-Id})}"
+        }
+        update control {
+            OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
         }
     }
     else {
         update control {
-            Oih-Api-Return = "%{sql:UPDATE `device` SET user = %{control:Oih-Api-User-Id}}"
+            OIH-API-Return = "%{sql:UPDATE `device` SET user = %{control:OIH-API-User-Id} WHERE id = %{control:OIH-API-Device-Id}}"
         }
     }
-    update control {
-        Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
-    }
-    # this has to be separate, otherwise control:Oih-Api-Device-Id won't be expanded correctly.
-    update control {
-        Oih-Api-Device-Nat = "%{sql:SELECT nat FROM `device` WHERE id = %{control:Oih-Api-Device-Id}}"
-    }
+    # this has to be separate, otherwise control:OIH-API-Device-Id won't be expanded correctly.
+    # we don't need NAT in radius post-auth
+    #update control {
+    #    OIH-API-Device-NAT = "%{sql:SELECT nat FROM `device` WHERE id = %{control:OIH-API-Device-Id}}"
+    #}
 
 	#
 	#  Access-Reject packets are sent through the REJECT sub-section of the
@@ -447,7 +452,7 @@ post-auth {
 
         # delete device from db
         update control {
-            Oih-Api-Return = "%{sql:DELETE FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
+            OIH-API-Return = "%{sql:DELETE FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
         }
 
 		#

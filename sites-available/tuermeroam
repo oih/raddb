@@ -264,8 +264,9 @@ authorize {
 	#  and the 'raddb/mods-config/preprocess/huntgroups' files.
 #	preprocess
 #	TODO preprocess anpassen mit MAC auth!
-    rewrite_called_station_id_mac
-    rewrite_calling_station_id_mac
+#    rewrite_called_station_id_mac
+#    rewrite_calling_station_id_mac
+    set_oih_api_mac_radius
 
 	#  If you intend to use CUI and you require that the Operator-Name
 	#  be set for CUI generation and you want to generate CUI also
@@ -323,110 +324,117 @@ authorize {
 #	suffix
 #	ntdomain
 
-    if (&User-Name && (&User-Name =~ /^${policy.mac-addr-regexp}([^0-9a-f](.+))?$/i)) {
+# I don't think this is mac auth but we'll see...
+#    if (&User-Name && (&User-Name =~ /^${policy.mac-addr-regexp}([^0-9a-f](.+))?$/i)) {
+    if (!EAP-Message) {
         # TODO: handle MAC auth
         return
+        # TBD: wie machen wir das im WLAN?
+        # check NAS-Port-Type
+        # SSID
+        #
     }
-#
-    # split User-Name into Stripped-User-Name and Stripped-User-Domain
-    split_username_nai
-    if (noop || !&Stripped-User-Domain) {
-        reject
-    }
-
-# check realm
-    if (&Stripped-User-Domain != "oih.rwth-aachen.de") {
-        update control {
-            Proxy-To-Realm := "%{Stripped-User-Domain}"
+    else {
+        # split User-Name into Stripped-User-Name and Stripped-User-Domain
+        split_username_nai
+        if (noop || !&Stripped-User-Domain) {
+            reject
         }
-        return
-    }
 
-	#
-	#  This module takes care of EAP-MD5, EAP-TLS, and EAP-LEAP
-	#  authentication.
-	#
-	#  It also sets the EAP-Type attribute in the request
-	#  attribute list to the EAP type from the packet.
-	#
-	#  The EAP module returns "ok" or "updated" if it is not yet ready
-	#  to authenticate the user.  The configuration below checks for
-	#  "ok", and stops processing the "authorize" section if so.
-	#
-	#  Any LDAP and/or SQL servers will not be queried for the
-	#  initial set of packets that go back and forth to set up
-	#  TTLS or PEAP.
-	#
-	#  The "updated" check is commented out for compatibility with
-	#  previous versions of this configuration, but you may wish to
-	#  uncomment it as well; this will further reduce the number of
-	#  LDAP and/or SQL queries for TTLS or PEAP.
-	#
-	eap {
-		ok = return
-		updated = return
-	}
+        # check realm
+        if (&Stripped-User-Domain != "oih.rwth-aachen.de") {
+            update control {
+                Proxy-To-Realm := "%{Stripped-User-Domain}"
+            }
+            return
+        }
 
-	#
-	#  Pull crypt'd passwords from /etc/passwd or /etc/shadow,
-	#  using the system API's to get the password.  If you want
-	#  to read /etc/passwd or /etc/shadow directly, see the
-	#  mods-available/passwd module.
-	#
-#	unix
+        #
+        #  This module takes care of EAP-MD5, EAP-TLS, and EAP-LEAP
+        #  authentication.
+        #
+        #  It also sets the EAP-Type attribute in the request
+        #  attribute list to the EAP type from the packet.
+        #
+        #  The EAP module returns "ok" or "updated" if it is not yet ready
+        #  to authenticate the user.  The configuration below checks for
+        #  "ok", and stops processing the "authorize" section if so.
+        #
+        #  Any LDAP and/or SQL servers will not be queried for the
+        #  initial set of packets that go back and forth to set up
+        #  TTLS or PEAP.
+        #
+        #  The "updated" check is commented out for compatibility with
+        #  previous versions of this configuration, but you may wish to
+        #  uncomment it as well; this will further reduce the number of
+        #  LDAP and/or SQL queries for TTLS or PEAP.
+        #
+        eap {
+            ok = return
+            updated = return
+        }
 
-	#
-	#  Read the 'users' file.  In v3, this is located in
-	#  raddb/mods-config/files/authorize
-#	files
+        #
+        #  Pull crypt'd passwords from /etc/passwd or /etc/shadow,
+        #  using the system API's to get the password.  If you want
+        #  to read /etc/passwd or /etc/shadow directly, see the
+        #  mods-available/passwd module.
+        #
+#	    unix
 
-	#
-	#  Look in an SQL database.  The schema of the database
-	#  is meant to mirror the "users" file.
-	#
-	#  See "Authorization Queries" in mods-available/sql
-#	-sql
+        #
+        #  Read the 'users' file.  In v3, this is located in
+        #  raddb/mods-config/files/authorize
+#	    files
 
-	#
-	#  If you are using /etc/smbpasswd, and are also doing
-	#  mschap authentication, the un-comment this line, and
-	#  configure the 'smbpasswd' module.
-#	smbpasswd
+        #
+        #  Look in an SQL database.  The schema of the database
+        #  is meant to mirror the "users" file.
+        #
+        #  See "Authorization Queries" in mods-available/sql
+#	    -sql
 
-	#
-	#  The ldap module reads passwords from the LDAP database.
-#	-ldap
+        #
+        #  If you are using /etc/smbpasswd, and are also doing
+        #  mschap authentication, the un-comment this line, and
+        #  configure the 'smbpasswd' module.
+#	    smbpasswd
 
-	#
-	#  Enforce daily limits on time spent logged in.
-#	daily
+        #
+        #  The ldap module reads passwords from the LDAP database.
+#	    -ldap
 
-	#
-#	expiration
-#	logintime
+        #
+        #  Enforce daily limits on time spent logged in.
+#	    daily
 
-	#
-	#  If no other module has claimed responsibility for
-	#  authentication, then try to use PAP.  This allows the
-	#  other modules listed above to add a "known good" password
-	#  to the request, and to do nothing else.  The PAP module
-	#  will then see that password, and use it to do PAP
-	#  authentication.
-	#
-	#  This module should be listed last, so that the other modules
-	#  get a chance to set Auth-Type for themselves.
-	#
-#	pap
+        #
+#   	expiration
+#   	logintime
 
-	#
-	#  If "status_server = yes", then Status-Server messages are passed
-	#  through the following section, and ONLY the following section.
-	#  This permits you to do DB queries, for example.  If the modules
-	#  listed here return "fail", then NO response is sent.
-	#
-#	Autz-Type Status-Server {
+        #
+        #  If no other module has claimed responsibility for
+        #  authentication, then try to use PAP.  This allows the
+        #  other modules listed above to add a "known good" password
+        #  to the request, and to do nothing else.  The PAP module
+        #  will then see that password, and use it to do PAP
+        #  authentication.
+        #
+        #  This module should be listed last, so that the other modules
+        #  get a chance to set Auth-Type for themselves.
+        #
+#	    pap
+
+        #
+        #  If "status_server = yes", then Status-Server messages are passed
+        #  through the following section, and ONLY the following section.
+        #  This permits you to do DB queries, for example.  If the modules
+        #  listed here return "fail", then NO response is sent.
+        #
+#	    Autz-Type Status-Server {
 #
-#	}
+#	    }
+    }
 }
 
 

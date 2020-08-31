@@ -1,6 +1,6 @@
 # WORK IN PROGRESS
-dhcp-oih-user-handle-request {
-    set-oih-api-mac-dhcp
+dhcp_oih_user_handle_request {
+    set_oih_api_mac_dhcp
 
     update reply {
         &DHCP-Domain-Name-Server = 134.130.4.1
@@ -19,3 +19,59 @@ dhcp-oih-user-handle-request {
 		}
 	}
 }
+
+oih_api_set_attributes {
+    update control {
+        OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+    }
+    if (&control:OIH-API-Device-Id != 0) {
+        # device exists
+        update control {
+            OIH-API-User-Id = "%{sql:SELECT user FROM `device` WHERE id = %{control:OIH-API-Device-Id}}"
+            OIH-API-Device-NAT = "%{sql:SELECT nat FROM `device` WHERE id = %{control:OIH-API-Device-Id}}"
+        }
+        update control {
+            OIH-API-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+            OIH-API-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        }
+        if (&control:OIH-API-Device-NAT == 1) {
+            update control {
+                OIH-API-IPv4-Id = "%{sql:SELECT id FROM `ipv4` WHERE user = %{control:OIH-API-User-Id} AND nat = 1}"
+            }
+            if (%control:OIH-API-IPv4-Id != 0) {
+                # found NAT pool for this user
+                update control {
+                    # we don't need the public IP for NAT
+                    # OIH-API-IPv4-Addr = <ipaddr>"%{sql:SELECT address FROM `ipv4` WHERE id = %{control:OIH-API-IPv4-Id}}"
+                    OIH-API-IPv4-Pool = "%{sql:SELECT natpool FROM `ipv4` WHERE id = %{control:OIH-API-IPv4-Id}}"
+                }
+            }
+            else {
+                # user has no NAT IP
+                noop
+            }
+        }
+        else {
+            # device has public IP
+            update control {
+                OIH-API-IPv4-Id = "%{sql:SELECT id FROM `ipv4` WHERE user = %{control:OIH-API-User-Id} AND device = %{control:OIH-API-Device-Id} AND nat = 0}"
+            }
+            if (%control:OIH-API-IPv4-Id != 0) {
+                # found NAT pool for this user
+                update control {
+                    OIH-API-IPv4-Addr = "%{sql:SELECT address FROM `ipv4` WHERE id = %{control:OIH-API-IPv4-Id}}"
+                }
+            }
+            else {
+                # user has no public IP for this device
+                noop
+            }
+        }
+    }
+    else {
+        # device doesn't exist
+        noop
+    }
+
+}
+

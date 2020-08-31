@@ -123,7 +123,7 @@ listen {
 #  section for a response to be sent.
 
 dhcp DHCP-Discover {
-    set-oih-api-mac-dhcp
+    set_oih_api_mac_dhcp
 
 	#  Set the type of packet to send in reply.
 	#
@@ -182,7 +182,7 @@ dhcp DHCP-Discover {
 }
 
 dhcp DHCP-Request {
-    set-oih-api-mac-dhcp
+    set_oih_api_mac_dhcp
 
 	# Response packet type. See DHCP-Discover section above.
 	update reply {
@@ -276,7 +276,7 @@ dhcp DHCP-Lease-Query {
 
 	# has MAC, asking for IP, etc.
 	if (&DHCP-Client-Hardware-Address) {
-        set-oih-api-mac-dhcp
+        set_oih_api_mac_dhcp
 		# look up MAC in database
 	}
 
