@@ -54,3 +54,5 @@ ATTRIBUTE   Oih-Api-User-Lastname   3002    string
 ATTRIBUTE   Oih-Api-User-Email      3003    string
 ATTRIBUTE   Oih-Api-Room-Number     3004    integer
 ATTRIBUTE   Oih-Api-User-Status     3005    string
+ATTRIBUTE   Oih-Api-Device-Id       3006    integer
+ATTRIBUTE   Oih-Api-Device-Nat      3007    integer

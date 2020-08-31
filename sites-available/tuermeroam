@@ -264,6 +264,8 @@ authorize {
 	#  and the 'raddb/mods-config/preprocess/huntgroups' files.
 #	preprocess
 #	TODO preprocess anpassen mit MAC auth!
+    rewrite_called_station_id_mac
+    rewrite_calling_station_id_mac
 
 	#  If you intend to use CUI and you require that the Operator-Name
 	#  be set for CUI generation and you want to generate CUI also

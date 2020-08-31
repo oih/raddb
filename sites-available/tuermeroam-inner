@@ -402,7 +402,27 @@ post-auth {
         Oih-Api-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
         Oih-Api-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
         Oih-Api-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = %{control:Oih-Api-User-Id}}"
+        Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
     }
+    
+    if (&control:Oih-Api-Device-Id == 0) {
+        update control {
+            Oih-Api-Device-Id = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{Calling-Station-Id}', 1, %{control:Oih-Api-User-Id})}"
+        }
+    }
+    else {
+        update control {
+            Oih-Api-Device-Id = "%{sql:UPDATE `device` SET user = %{control:Oih-Api-User-Id}}"
+        }
+    }
+    update control {
+        Oih-Api-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
+    }
+    # this has to be separate, otherwise control:Oih-Api-Device-Ide won't be expanded correctly.
+    update control {
+        Oih-Api-Device-Nat = "%{sql:SELECT nat FROM `device` WHERE id = %{control:Oih-Api-Device-Id}}"
+    }
+
 	#
 	#  Access-Reject packets are sent through the REJECT sub-section of the
 	#  post-auth section.
@@ -414,6 +434,11 @@ post-auth {
 		# log failed authentications in SQL, too.
 #		-sql
 		attr_filter.access_reject
+
+        # delete device from db
+        update control {
+            Oih-Api-Device-Id = "%{sql:DELETE FROM `device` WHERE mac = '%{Calling-Station-Id}'}"
+        }
 
 		#
 		#  Let the outer session know which module failed, and why.
