@@ -38,7 +38,7 @@ oih_api_set_attributes {
             update control {
                 OIH-API-IPv4-Id = "%{sql:SELECT id FROM `ipv4` WHERE user = %{control:OIH-API-User-Id} AND nat = 1}"
             }
-            if (%control:OIH-API-IPv4-Id != 0) {
+            if (&control:OIH-API-IPv4-Id != 0) {
                 # found NAT pool for this user
                 update control {
                     # we don't need the public IP for NAT
@@ -56,7 +56,7 @@ oih_api_set_attributes {
             update control {
                 OIH-API-IPv4-Id = "%{sql:SELECT id FROM `ipv4` WHERE user = %{control:OIH-API-User-Id} AND device = %{control:OIH-API-Device-Id} AND nat = 0}"
             }
-            if (%control:OIH-API-IPv4-Id != 0) {
+            if (&control:OIH-API-IPv4-Id != 0) {
                 # found NAT pool for this user
                 update control {
                     OIH-API-IPv4-Addr = "%{sql:SELECT address FROM `ipv4` WHERE id = %{control:OIH-API-IPv4-Id}}"
