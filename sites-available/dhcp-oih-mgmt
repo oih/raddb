@@ -1,10 +1,10 @@
 server dhcp-oih-mgmt {
 listen {
 	type = dhcp
-	ipaddr = 10.0.80.80
-#	src_ipaddr = 127.0.0.1
+	ipaddr = 0.0.0.0
+	src_ipaddr = 10.0.80.80
 	port = 67
-#	interface = lo0
+	interface = oih-mgmt-0
 	broadcast = yes
 }
 
