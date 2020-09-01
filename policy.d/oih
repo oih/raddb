@@ -130,7 +130,9 @@ oih_api_set_dhcp {
 
 # call this after dhcp_sqlippool
 oih_api_set_dhcp_subnet {
-    if (<ipaddr>&DHCP-Your-IP-Address < 137.226.148.0/23) {
+# FIX THIS
+    #if (<ipaddr>&DHCP-Your-IP-Address < 137.226.148.0/23) {
+    if (<ipaddr>&reply:DHCP-Your-IP-Address > 137.226.148.0) {
         update reply {
             &DHCP-Domain-Name-Server = 134.130.4.1
             &DHCP-Domain-Name-Server = 134.130.5.1
@@ -141,7 +143,8 @@ oih_api_set_dhcp_subnet {
         }
         updated
     }
-    elsif (<ipaddr>&DHCP-Your-IP-Address < 10.148.0.0/15) {
+    else {
+#    elsif (<ipaddr>&DHCP-Your-IP-Address < 10.148.0.0/15) {
         update reply {
             &DHCP-Domain-Name-Server = 134.130.4.1
             &DHCP-Domain-Name-Server = 134.130.5.1
@@ -152,9 +155,9 @@ oih_api_set_dhcp_subnet {
         }
         updated
     }
-    else {
-        noop
-    }
+#    else {
+#        noop
+#    }
 }
 
 oih_dhcp_pool_unregistered_temporary {

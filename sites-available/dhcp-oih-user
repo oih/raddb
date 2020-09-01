@@ -171,6 +171,8 @@ dhcp DHCP-Request {
     oih_api_set_dhcp
     # TODO check for notfound
 
+    oih_dhcp_pool_unregistered_temporary
+
 	#  Do a simple mapping of MAC to assigned IP.
 	#
 	#  See below for the definition of the "mac2ip"
