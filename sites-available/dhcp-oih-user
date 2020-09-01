@@ -20,7 +20,7 @@
 #
 #  The DHCP functionality goes into a virtual server.
 #
-server dhcp {
+server dhcp-oih-user {
 
 #  Define a DHCP socket.
 #
