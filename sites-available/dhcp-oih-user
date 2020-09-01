@@ -60,7 +60,7 @@ listen {
 
 	#  IP address to listen on. Will usually be the IP of the
 	#  interface, or 0.0.0.0
-	ipaddr = 137.226.148.5
+	ipaddr = 0.0.0.0
 
 	#  source IP address for unicast packets sent by the
 	#  DHCP server.
@@ -74,7 +74,7 @@ listen {
 	#	reply:DHCP-Server-IP-Address
 	#	reply:DHCP-DHCP-Server-Identifier
 	#
-#	src_ipaddr = 127.0.0.1
+#	src_ipaddr = 137.226.148.5
 
 	#  The port should be 67 for a production network. Don't set
 	#  it to 67 on a production network unless you really know
@@ -83,7 +83,7 @@ listen {
 	port = 67
 
 	#  Interface name we are listening on. See comments above.
-#	interface = lo0
+	interface = oih-br0
 
 	# The DHCP server defaults to allowing broadcast packets.
 	# Set this to "no" only when the server receives *all* packets
@@ -104,13 +104,6 @@ listen {
 	# for newly allocated IPs
 }
 
-listen {
-	type = dhcp
-	ipaddr = 10.148.0.5
-	port = 67
-	broadcast = yes
-}
-
 #  Packets received on the socket will be processed through one
 #  of the following sections, named after the DHCP packet type.
 #  See dictionary.dhcp for the packet types.
@@ -124,6 +117,7 @@ listen {
 
 dhcp DHCP-Discover {
     oih_api_mac_dhcp
+    oih_api_set_attributes
 
 	#  Set the type of packet to send in reply.
 	#
@@ -165,6 +159,7 @@ dhcp DHCP-Discover {
 
 dhcp DHCP-Request {
     oih_api_mac_dhcp
+    oih_api_set_attributes
 
 	# Response packet type. See DHCP-Discover section above.
 	update reply {

@@ -5,7 +5,7 @@ server dhcp-debug {
         ipaddr = 0.0.0.0
 #	    src_ipaddr = 127.0.0.1
         port = 67
-#	    interface = lo0
+	    interface = oih-br0
         broadcast = yes
     }
 
@@ -13,10 +13,12 @@ server dhcp-debug {
         oih_api_mac_dhcp
         oih_api_set_attributes
 
-        oih_api_set_dhcp
+#        oih_api_set_dhcp
 
         #sqlippool
-        unifi_vendor
+
+#        oih_api_set_dhcp_subnet
+#        unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -26,9 +28,11 @@ server dhcp-debug {
     dhcp DHCP-Request {
         oih_api_mac_dhcp
         oih_api_set_attributes
-        oih_api_set_dhcp
+
+#        oih_api_set_dhcp
 
         #sqlippool
+#        oih_api_set_dhcp_subnet
         unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond

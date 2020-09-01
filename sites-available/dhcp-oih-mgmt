@@ -15,7 +15,7 @@ dhcp DHCP-Discover {
 
 	update reply {
 		&DHCP-Subnet-Mask = 255.255.0.0
-		&DHCP-IP-Address-Lease-Time = 480
+		&DHCP-IP-Address-Lease-Time = 86400
 		&DHCP-DHCP-Server-Identifier = 10.0.80.80
 	}
 
@@ -30,7 +30,6 @@ dhcp DHCP-Discover {
 }
 
 dhcp DHCP-Request {
-
 	# Response packet type. See DHCP-Discover section above.
 	update reply {
 	       &DHCP-Message-Type = DHCP-Ack
@@ -38,7 +37,7 @@ dhcp DHCP-Request {
 
 	update reply {
 		&DHCP-Subnet-Mask = 255.255.0.0
-		&DHCP-IP-Address-Lease-Time = 480
+		&DHCP-IP-Address-Lease-Time = 86400
 		&DHCP-DHCP-Server-Identifier = 10.0.80.80
 	}
 
