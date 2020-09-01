@@ -12,6 +12,7 @@ server dhcp {
     dhcp DHCP-Discover {
         set_oih_api_mac_dhcp
         oih_api_set_attributes
+        unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -21,6 +22,7 @@ server dhcp {
     dhcp DHCP-Request {
         set_oih_api_mac_dhcp
         oih_api_set_attributes
+        unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }

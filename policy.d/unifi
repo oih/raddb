@@ -1,0 +1,10 @@
+unifi_vendor {
+  update control {
+    Tmp-Octets-0 = 0x0104
+    # set unifi controller IP here:
+    Tmp-IP-Address-0 = 10.0.80.80
+  }
+  update reply {
+    DHCP-Vendor = "%{control:Tmp-Octets-0}%{hex:control:Tmp-IP-Address-0}"
+  }
+}
