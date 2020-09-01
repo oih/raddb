@@ -147,33 +147,3 @@ rewrite_calling_station_id_mac {
 		noop
 	}
 }
-
-#
-# Set OIH-API-Device-MAC string to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
-#
-set_oih_api_mac_radius {
-	if (&Calling-Station-Id && (&Calling-Station-Id =~ /^${policy.mac-addr-regexp}$/i)) {
-		update control {
-			&OIH-API-Device-MAC := "%{tolower:%{1}:%{2}:%{3}:%{4}:%{5}:%{6}}"
-		}
-		updated
-	}
-	else {
-		noop
-	}
-}
-
-#
-# Set OIH-API-Device-MAC string to DHCP-Client-Hardware-Address in aa:bb:cc:dd:ee:ff format
-#
-set_oih_api_mac_dhcp {
-    if(&DHCP-Client-Hardware-Address) {
-        update control {
-            &OIH-API-Device-MAC = "%{tolower:%{DHCP-Client-Hardware-Address}}"
-        }
-		updated
-    }
-    else {
-        noop
-    }
-}

@@ -20,7 +20,7 @@
 #
 #  The DHCP functionality goes into a virtual server.
 #
-server dhcp {
+server dhcp-oih-mgmt {
 
 #  Define a DHCP socket.
 #
@@ -60,7 +60,7 @@ listen {
 
 	#  IP address to listen on. Will usually be the IP of the
 	#  interface, or 0.0.0.0
-	ipaddr = 137.226.148.5
+	ipaddr = 127.0.0.1
 
 	#  source IP address for unicast packets sent by the
 	#  DHCP server.
@@ -74,13 +74,13 @@ listen {
 	#	reply:DHCP-Server-IP-Address
 	#	reply:DHCP-DHCP-Server-Identifier
 	#
-#	src_ipaddr = 127.0.0.1
+	src_ipaddr = 127.0.0.1
 
 	#  The port should be 67 for a production network. Don't set
 	#  it to 67 on a production network unless you really know
 	#  what you're doing. Even if nothing is configured below, the
 	#  server may still NAK legitimate responses from clients.
-	port = 67
+	port = 6700
 
 	#  Interface name we are listening on. See comments above.
 #	interface = lo0
@@ -93,7 +93,7 @@ listen {
 	# It's set to "no" here for testing. It will usually want to
 	# be "yes" in production, unless you are only dealing with
 	# relayed packets.
-	broadcast = yes
+	broadcast = no
 
 	# On Linux if you're running the server as non-root, you
 	# will need to do:
@@ -102,13 +102,6 @@ listen {
 	#
 	# This will allow the server to set ARP table entries
 	# for newly allocated IPs
-}
-
-listen {
-	type = dhcp
-	ipaddr = 10.148.0.5
-	port = 67
-	broadcast = yes
 }
 
 #  Packets received on the socket will be processed through one
@@ -123,7 +116,6 @@ listen {
 #  section for a response to be sent.
 
 dhcp DHCP-Discover {
-    oih_api_mac_dhcp
 
 	#  Set the type of packet to send in reply.
 	#
@@ -143,17 +135,21 @@ dhcp DHCP-Discover {
 	       DHCP-Message-Type = DHCP-Offer
 	}
 
+	update reply {
+		&DHCP-Subnet-Mask = 255.255.0.0
+		&DHCP-IP-Address-Lease-Time = 480
+		&DHCP-DHCP-Server-Identifier = 10.0.80.80
+	}
+
+    unifi_vendor
+
+
 	#  Or, allocate IPs from the DHCP pool in SQL. You may need to
 	#  set the pool name here if you haven't set it elsewhere.
 #	update control {
 #		&Pool-Name := "local"
 #	}
-    
-    oih_api_set_dhcp
-
-	dhcp_sqlippool
-
-    oih_api_set_dhcp_subnet
+#	dhcp_sqlippool
 
 	#  If DHCP-Message-Type is not set, returning "ok" or
 	#  "updated" from this section will respond with a DHCP-Offer
@@ -164,15 +160,19 @@ dhcp DHCP-Discover {
 }
 
 dhcp DHCP-Request {
-    oih_api_mac_dhcp
 
 	# Response packet type. See DHCP-Discover section above.
 	update reply {
 	       &DHCP-Message-Type = DHCP-Ack
 	}
 
-    oih_api_set_dhcp
-    # TODO check for notfound
+	update reply {
+		&DHCP-Subnet-Mask = 255.255.0.0
+		&DHCP-IP-Address-Lease-Time = 480
+		&DHCP-DHCP-Server-Identifier = 10.0.80.80
+	}
+
+    unifi_vendor
 
 	#  Do a simple mapping of MAC to assigned IP.
 	#
@@ -193,9 +193,7 @@ dhcp DHCP-Request {
 #	update control {
 #		&Pool-Name := "local"
 #	}
-	dhcp_sqlippool
-
-    oih_api_set_dhcp_subnet
+#	dhcp_sqlippool
 
 	#  If DHCP-Message-Type is not set, returning "ok" or
 	#  "updated" from this section will respond with a DHCP-Ack
@@ -249,14 +247,11 @@ dhcp DHCP-Release {
 
 
 dhcp DHCP-Lease-Query {
-    # kann dhcp_sqlippool das auch??
-
 	#  The thing being queried for is implicit
 	#  in the packets.
 
 	# has MAC, asking for IP, etc.
 	if (&DHCP-Client-Hardware-Address) {
-        oih_api_mac_dhcp
 		# look up MAC in database
 	}
 

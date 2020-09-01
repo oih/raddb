@@ -36,12 +36,13 @@ sqlippool dhcp_sqlippool {
 
 	sqlippool_log_exists = "DHCP: Existing IP: %{reply:Framed-IP-Address} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
 
-	sqlippool_log_success = "DHCP: Allocated IP: %{reply:Framed-IP-Address} from %{control:${..pool_name}} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+    # fix fhuels 2020-09-01: couldnt dereference ${..pool_name} so I hardcoded it, UPSTREAM bug??
+	sqlippool_log_success = "DHCP: Allocated IP: %{reply:Framed-IP-Address} from %{control:Pool-Name} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
 
 	sqlippool_log_clear = "DHCP: Released IP %{Framed-IP-Address} (did %{Called-Station-Id} cli %{Calling-Station-Id} user %{User-Name})"
 
-	sqlippool_log_failed = "DHCP: IP Allocation FAILED from %{control:${..pool_name}} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+	sqlippool_log_failed = "DHCP: IP Allocation FAILED from %{control:Pool-Name} (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
 
-	sqlippool_log_nopool = "DHCP: No ${..pool_name} defined (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
+	sqlippool_log_nopool = "DHCP: No Pool-Name defined (did %{Called-Station-Id} cli %{Calling-Station-Id} port %{NAS-Port} user %{User-Name})"
 
 }

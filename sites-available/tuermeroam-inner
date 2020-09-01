@@ -130,7 +130,7 @@ authorize {
     }
 
     # set OIH-API-Device-MAC to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
-    set_oih_api_mac_radius
+    oih_api_mac_radius
 
 # oih-api sql
     update control {
@@ -330,7 +330,7 @@ session {
 #  the ONLY safe way is to set "use_tunneled_reply = yes", and
 #  then update the inner-tunnel reply.
 post-auth {
-    set_oih_api_mac_radius
+    oih_api_mac_radius
 	#  If you want privacy to remain, see the
 	#  Chargeable-User-Identity attribute from RFC 4372.
 	#  If you want to use it just uncomment the line below.

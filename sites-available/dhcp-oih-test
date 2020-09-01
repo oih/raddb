@@ -1,0 +1,181 @@
+server dhcp-oih-test {
+listen {
+	type = dhcp
+	ipaddr = 10.6.0.100
+	port = 67
+#	interface = lo0
+	broadcast = yes
+}
+dhcp DHCP-Discover {
+    oih_api_mac_dhcp
+
+	update reply {
+	       DHCP-Message-Type = DHCP-Offer
+	}
+
+    oih_api_set_dhcp
+    # TODO check for notfound
+	dhcp_sqlippool
+
+    oih_api_set_dhcp_subnet
+
+	ok
+}
+
+dhcp DHCP-Request {
+    oih_api_mac_dhcp
+
+	update reply {
+	       &DHCP-Message-Type = DHCP-Ack
+	}
+
+    oih_api_set_dhcp
+    # TODO check for notfound
+	dhcp_sqlippool
+
+    oih_api_set_dhcp_subnet
+
+	ok
+}
+
+dhcp DHCP-Decline {
+	update reply {
+	       &DHCP-Message-Type = DHCP-Do-Not-Respond
+	}
+	reject
+}
+
+dhcp DHCP-Inform {
+	update reply {
+	       &DHCP-Message-Type = DHCP-Do-Not-Respond
+	}
+	reject
+}
+
+#
+#  For Windows 7 boxes
+#
+#dhcp DHCP-Inform {
+#	update reply {
+#		Packet-Dst-Port = 67
+#		DHCP-Message-Type = DHCP-ACK
+#		DHCP-DHCP-Server-Identifier = "%{Packet-Dst-IP-Address}"
+#		DHCP-Site-specific-28 = 0x0a00
+#	}
+#	ok
+#}
+
+dhcp DHCP-Release {
+	update reply {
+	       &DHCP-Message-Type = DHCP-Do-Not-Respond
+	}
+	reject
+}
+
+
+dhcp DHCP-Lease-Query {
+    # kann dhcp_sqlippool das auch??
+
+	#  The thing being queried for is implicit
+	#  in the packets.
+
+	# has MAC, asking for IP, etc.
+	if (&DHCP-Client-Hardware-Address) {
+        oih_api_mac_dhcp
+		# look up MAC in database
+	}
+
+	# has IP, asking for MAC, etc.
+	elsif (&DHCP-Your-IP-Address) {
+		# look up IP in database
+	}
+
+	# has host name, asking for IP, MAC, etc.
+	elsif (&DHCP-Client-Identifier) {
+		# look up identifier in database
+	}
+	else {
+		update reply {
+			&DHCP-Message-Type = DHCP-Lease-Unknown
+		}
+
+		ok
+
+		# stop processing
+		return
+	}
+
+	#
+	#  We presume that the database lookup returns "notfound"
+	#  if it can't find anything.
+	#
+	if (notfound) {
+		update reply {
+			&DHCP-Message-Type = DHCP-Lease-Unknown
+		}
+		ok
+		return
+	}
+
+	#
+	#	Add more logic here.  Is the lease inactive?
+	#	If so, respond with DHCP-Lease-Unassigned.
+	#
+	#	Otherwise, respond with DHCP-Lease-Active
+	#
+
+	#
+	#	Also be sure to return ALL information about
+	#	the lease.
+	#
+
+	#
+	#	The reply types are:
+	#
+	#	DHCP-Lease-Unknown
+	#	DHCP-Lease-Active
+	#	DHCP-Lease-Unassigned
+	#
+	update reply {
+		&DHCP-Message-Type = DHCP-Lease-Unassigned
+	}
+
+}
+
+}
+
+######################################################################
+#
+#  This next section is a sample configuration for the "passwd"
+#  module, that reads flat-text files.  It should go into
+#  radiusd.conf, in the "modules" section.
+#
+#  The file is in the format <mac>,<ip>
+#
+#	00:01:02:03:04:05,192.0.2.100
+#	01:01:02:03:04:05,192.0.2.101
+#	02:01:02:03:04:05,192.0.2.102
+#
+#  This lets you perform simple static IP assignment.
+#
+#  There is a preconfigured "mac2ip" module setup in
+#  mods-available/mac2ip. To use it do:
+#
+#    # cd raddb/
+#    # ln -s ../mods-available/mac2ip mods-enabled/mac2ip
+#    # mkdir mods-config/passwd
+#
+#  Then create the file mods-config/passwd/mac2ip with the above
+#  format.
+#
+######################################################################
+
+
+#  This is an example only - see mods-available/mac2ip instead; do
+#  not uncomment these lines here.
+#
+#passwd mac2ip {
+#	filename = ${confdir}/mac2ip
+#	format = "*DHCP-Client-Hardware-Address:=DHCP-Your-IP-Address"
+#	delimiter = ","
+#}

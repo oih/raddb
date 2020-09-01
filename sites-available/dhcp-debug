@@ -1,5 +1,5 @@
 # just for -X debugging, never respond to anything
-server dhcp {
+server dhcp-debug {
     listen {
         type = dhcp
         ipaddr = 0.0.0.0
@@ -10,8 +10,12 @@ server dhcp {
     }
 
     dhcp DHCP-Discover {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
+
+        oih_api_set_dhcp
+
+        #sqlippool
         unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
@@ -20,8 +24,11 @@ server dhcp {
     }
 
     dhcp DHCP-Request {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
+        oih_api_set_dhcp
+
+        #sqlippool
         unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
@@ -30,7 +37,7 @@ server dhcp {
     }
 
     dhcp DHCP-Decline {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
@@ -39,7 +46,7 @@ server dhcp {
     }
 
     dhcp DHCP-Inform {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
@@ -48,7 +55,7 @@ server dhcp {
     }
 
     dhcp DHCP-Release {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
@@ -57,7 +64,7 @@ server dhcp {
     }
 
     dhcp DHCP-Lease-Query {
-        set_oih_api_mac_dhcp
+        oih_api_mac_dhcp
         oih_api_set_attributes
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond

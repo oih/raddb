@@ -266,7 +266,7 @@ authorize {
 #	TODO preprocess anpassen mit MAC auth!
 #    rewrite_called_station_id_mac
 #    rewrite_calling_station_id_mac
-    set_oih_api_mac_radius
+    oih_api_mac_radius
 
 	#  If you intend to use CUI and you require that the Operator-Name
 	#  be set for CUI generation and you want to generate CUI also
@@ -327,6 +327,8 @@ authorize {
 # I don't think this is mac auth but we'll see...
 #    if (&User-Name && (&User-Name =~ /^${policy.mac-addr-regexp}([^0-9a-f](.+))?$/i)) {
     if (!EAP-Message) {
+        # ACHTUNG! NUR ZUM TEST, DIESE ZEILE SPÄTER LÖSCHEN!
+        accept # test mac auth
         # TODO: handle MAC auth
         return
         # TBD: wie machen wir das im WLAN?

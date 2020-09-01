@@ -1,6 +1,39 @@
 # WORK IN PROGRESS
+$INCLUDE "canonicalization"
+
+#
+# Set OIH-API-Device-MAC string to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
+#
+oih_api_mac_radius {
+	if (&Calling-Station-Id && (&Calling-Station-Id =~ /^${policy.mac-addr-regexp}$/i)) {
+		update control {
+			&OIH-API-Device-MAC := "%{tolower:%{1}:%{2}:%{3}:%{4}:%{5}:%{6}}"
+		}
+		updated
+	}
+	else {
+		noop
+	}
+}
+
+#
+# Set OIH-API-Device-MAC string to DHCP-Client-Hardware-Address in aa:bb:cc:dd:ee:ff format
+#
+oih_api_mac_dhcp {
+    if(&DHCP-Client-Hardware-Address) {
+        update control {
+            &OIH-API-Device-MAC = "%{tolower:%{DHCP-Client-Hardware-Address}}"
+        }
+		updated
+    }
+    else {
+        noop
+    }
+}
+
+# DEPRECATED DONT USE
 dhcp_oih_user_handle_request {
-    set_oih_api_mac_dhcp
+    oih_api_mac_dhcp
 
     update reply {
         &DHCP-Domain-Name-Server = 134.130.4.1
@@ -48,7 +81,7 @@ oih_api_set_attributes {
             }
             else {
                 # user has no NAT IP
-                noop
+                notfound
             }
         }
         else {
@@ -64,14 +97,62 @@ oih_api_set_attributes {
             }
             else {
                 # user has no public IP for this device
-                noop
+                notfound
             }
         }
     }
     else {
         # device doesn't exist
-        noop
+        notfound
     }
+    # return userlock if user is blocked
+    #if (&control:OIH-API-User-Status && (&control:OIH-API-User-Status == 'blocked')) {
+    #    userlock
+    #}
+    #else {
+    #    ok
+    #}
+    # userlock will just return the dhcp module which we don't want
+    noop
 
 }
 
+oih_api_set_dhcp {
+    # these only get updated if the OIH-API-* attributes exist
+    update control {
+        &Pool-Name := &control:OIH-API-IPv4-Pool
+    }
+   
+    update reply {
+        &DHCP-Your-IP-Address := &control:OIH-API-IPv4-Addr
+    }
+}
+
+# call this after dhcp_sqlippool
+oih_api_set_dhcp_subnet {
+    if (<ipaddr>&DHCP-Your-IP-Address < 137.226.148.0/23) {
+        update reply {
+            &DHCP-Domain-Name-Server = 134.130.4.1
+            &DHCP-Domain-Name-Server = 134.130.5.1
+            &DHCP-Subnet-Mask = 255.255.254.0
+            &DHCP-Router-Address = 137.226.148.1
+            &DHCP-IP-Address-Lease-Time = 7200
+            &DHCP-DHCP-Server-Identifier = 137.226.148.5 # get this from the socket ipaddr variable somehow
+        }
+        updated
+    }
+    elsif (<ipaddr>&DHCP-Your-IP-Address < 10.148.0.0/15) {
+        update reply {
+            &DHCP-Domain-Name-Server = 134.130.4.1
+            &DHCP-Domain-Name-Server = 134.130.5.1
+            &DHCP-Subnet-Mask = 255.254.0.0
+            &DHCP-Router-Address = 10.148.0.1
+            &DHCP-IP-Address-Lease-Time = 7200
+            &DHCP-DHCP-Server-Identifier = 10.148.0.5 # get this from the socket ipaddr variable somehow
+        }
+        updated
+    }
+    else {
+        noop
+    }
+}
