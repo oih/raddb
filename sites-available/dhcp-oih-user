@@ -145,6 +145,8 @@ dhcp DHCP-Discover {
     
     oih_api_set_dhcp
 
+    oih_dhcp_pool_unregistered_temporary
+
 	dhcp_sqlippool
 
     oih_api_set_dhcp_subnet

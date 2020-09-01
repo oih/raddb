@@ -156,3 +156,16 @@ oih_api_set_dhcp_subnet {
         noop
     }
 }
+
+oih_dhcp_pool_unregistered_temporary {
+    if(!&control:Pool-Name && !&reply:DHCP-Your-IP-Address && &control:OIH-API-Device-Id == 0) {
+        update control {
+            &Pool-Name := "oih_user_10_149_99"
+            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, 69)}"
+        }
+        updated
+    }
+    else {
+        noop
+    }
+}
