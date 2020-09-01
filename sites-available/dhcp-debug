@@ -18,7 +18,6 @@ server dhcp-debug {
         #sqlippool
 
 #        oih_api_set_dhcp_subnet
-#        unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
@@ -33,7 +32,6 @@ server dhcp-debug {
 
         #sqlippool
 #        oih_api_set_dhcp_subnet
-        unifi_vendor
         update reply {
             &DHCP-Message-Type = DHCP-Do-Not-Respond
         }
