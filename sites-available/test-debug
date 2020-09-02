@@ -1,0 +1,33 @@
+server test-debug {
+listen {
+	type = auth
+	ipaddr = *
+	port = 0
+	limit {
+	      lifetime = 0
+	      idle_timeout = 30
+	}
+}
+
+authorize {
+}
+
+authenticate {
+}
+
+preacct {
+}
+
+accounting {
+}
+session {
+}
+post-auth {
+}
+
+pre-proxy {
+}
+
+post-proxy {
+}
+}

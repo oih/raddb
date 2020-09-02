@@ -13,18 +13,14 @@ dhcp DHCP-Discover {
 	    &DHCP-Message-Type = DHCP-Offer
 	}
 
-	update reply {
-		&DHCP-Subnet-Mask = 255.255.0.0
-		&DHCP-IP-Address-Lease-Time = 86400
-		&DHCP-DHCP-Server-Identifier = 10.0.80.80
-	}
-
     unifi_vendor
 
     update control {
         &Pool-Name := "oih_mgmt"
     }
     dhcp_sqlippool
+
+    oih_api_set_dhcp_subnet
 
 	ok
 }
@@ -35,21 +31,14 @@ dhcp DHCP-Request {
 	       &DHCP-Message-Type = DHCP-Ack
 	}
 
-	update reply {
-		&DHCP-Subnet-Mask = 255.255.0.0
-		&DHCP-IP-Address-Lease-Time = 86400
-		&DHCP-DHCP-Server-Identifier = 10.0.80.80
-	}
-
     unifi_vendor
-#	update control {
-#		&Pool-Name := "local"
-#	}
 
     update control {
         &Pool-Name := "oih_mgmt"
     }
 	dhcp_sqlippool
+
+    oih_api_set_dhcp_subnet
 
 	ok
 }

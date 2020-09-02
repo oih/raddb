@@ -1,4 +1,3 @@
-# WORK IN PROGRESS
 $INCLUDE "canonicalization"
 
 #
@@ -29,28 +28,6 @@ oih_api_mac_dhcp {
     else {
         noop
     }
-}
-
-# DEPRECATED DONT USE
-dhcp_oih_user_handle_request {
-    oih_api_mac_dhcp
-
-    update reply {
-        &DHCP-Domain-Name-Server = 134.130.4.1
-        &DHCP-Domain-Name-Server = 134.130.5.1
-        &DHCP-Subnet-Mask = 255.255.254.0
-        &DHCP-Router-Address = 137.226.148.1
-        &DHCP-IP-Address-Lease-Time = 7200
-        &DHCP-DHCP-Server-Identifier = 137.226.148.5 # get this from the ipaddr variable somehow
-    }
-
-    sqlippool
-
-	if (ok) {
-		update reply {
-			&DHCP-Your-IP-Address = "%{reply:Framed-IP-Address}"
-		}
-	}
 }
 
 oih_api_set_attributes {
@@ -130,9 +107,7 @@ oih_api_set_dhcp {
 
 # call this after dhcp_sqlippool
 oih_api_set_dhcp_subnet {
-# FIX THIS
-    #if (<ipaddr>&DHCP-Your-IP-Address < 137.226.148.0/23) {
-    if (<ipaddr>&reply:DHCP-Your-IP-Address > 137.226.148.0) {
+    if (&reply:DHCP-Your-IP-Address < 137.226.148/23) {
         update reply {
             &DHCP-Domain-Name-Server = 134.130.4.1
             &DHCP-Domain-Name-Server = 134.130.5.1
@@ -143,8 +118,7 @@ oih_api_set_dhcp_subnet {
         }
         updated
     }
-    else {
-#    elsif (<ipaddr>&DHCP-Your-IP-Address < 10.148.0.0/15) {
+    elsif (&reply:DHCP-Your-IP-Address < 10.148/15) {
         update reply {
             &DHCP-Domain-Name-Server = 134.130.4.1
             &DHCP-Domain-Name-Server = 134.130.5.1
@@ -155,9 +129,20 @@ oih_api_set_dhcp_subnet {
         }
         updated
     }
-#    else {
-#        noop
-#    }
+    elsif (&reply:DHCP-Your-IP-Address < 10.0/16) {
+        update reply {
+            &DHCP-Subnet-Mask = 255.255.0.0
+            &DHCP-IP-Address-Lease-Time = 86400
+            &DHCP-DHCP-Server-Identifier = 10.0.80.80
+        }
+        updated
+    }
+    else {
+        update reply {
+            &DHCP-Message-Type = DHCP-Do-Not-Respond
+        }
+        noop
+    }
 }
 
 oih_dhcp_pool_unregistered_temporary {
