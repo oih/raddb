@@ -827,32 +827,7 @@ post-auth {
 #		}
 #	}
 
-    # dynamic VLAN
-    update reply {
-        Tunnel-Type := VLAN
-        Tunnel-Medium-Type := IEEE-802
-    }
-    # TODO check for MAC auth, check MAC, then set VLAN
-    switch &Stripped-User-Domain {
-        case "oih.rwth-aachen.de" {
-            update reply { Tunnel-Private-Group-ID := 263 }
-        }
-        case "tvk.rwth-aachen.de" {
-            update reply { Tunnel-Private-Group-ID := 261 }
-        }
-        case "oph.rwth-aachen.de" {
-            update reply { Tunnel-Private-Group-ID := 262 }
-        }
-        case "weh.rwth-aachen.de" {
-            update reply { Tunnel-Private-Group-ID := 919 }
-        }
-        case "weh.ac" {
-            update reply { Tunnel-Private-Group-ID := 116 }
-        }
-        case "farue.rwth-aachen.de" {
-            update reply { Tunnel-Private-Group-ID := 264 }
-        }
-    }
+    tuerme_set_vlan
 
     if (&session-state:Stripped-User-Name) {
         update reply {

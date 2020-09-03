@@ -1,0 +1,121 @@
+server tuermeroam {
+listen {
+	type = auth
+	ipaddr = *
+	port = 0
+	limit {
+	      max_connections = 16
+	      lifetime = 0
+	      idle_timeout = 30
+	}
+}
+listen {
+	ipaddr = *
+	port = 0
+	type = acct
+
+	limit {
+	}
+}
+
+listen {
+	type = auth
+	ipv6addr = ::	# any.  ::1 == localhost
+	port = 0
+	limit {
+	      max_connections = 16
+	      lifetime = 0
+	      idle_timeout = 30
+	}
+}
+
+listen {
+	ipv6addr = ::
+	port = 0
+	type = acct
+
+	limit {
+	}
+}
+
+authorize {
+	filter_username
+    oih_api_mac_radius
+    if (!EAP-Message) {
+        # ACHTUNG! NUR ZUM TEST, DIESE ZEILE SPÄTER LÖSCHEN!
+        #accept # test mac auth
+        reject
+        # TODO: handle MAC auth
+        oih_api_mac_auth
+        return
+        # TBD: wie machen wir das im WLAN?
+        # check NAS-Port-Type
+        # SSID
+        #
+    }
+    else {
+        # split User-Name into Stripped-User-Name and Stripped-User-Domain
+        split_username_nai
+        if (noop || !&Stripped-User-Domain) {
+            reject
+        }
+
+        # check realm
+        if (&Stripped-User-Domain != "oih.rwth-aachen.de") {
+            update control {
+                Proxy-To-Realm := "%{Stripped-User-Domain}"
+            }
+            return
+        }
+
+        eap {
+            ok = return
+            updated = return
+        }
+
+    }
+}
+
+authenticate {
+	eap
+}
+
+preacct {
+	preprocess
+}
+
+accounting {
+}
+
+session {
+#	radutmp
+
+	#
+	#  See "Simultaneous Use Checking Queries" in mods-available/sql
+#	sql
+}
+
+post-auth {
+    tuerme_set_vlan
+
+    if (&session-state:Stripped-User-Name) {
+        update reply {
+            User-Name := "%{session-state:Stripped-User-Name}@%{Stripped-User-Domain}"
+        }
+    }
+
+	Post-Auth-Type REJECT {
+		attr_filter.access_reject
+		eap
+	}
+}
+
+pre-proxy {
+	attr_filter.pre-proxy
+}
+
+post-proxy {
+	attr_filter.post-proxy
+	eap
+}
+}
