@@ -1,5 +1,22 @@
 $INCLUDE "canonicalization"
 
+# !!ACHTUNG!!
+# Diese Policy sollte nur temporär benutzt werden, bis wieder alle Geräte
+# bei den richtigen Bewohnern eingetragen sind und diese einen eigenen
+# NAT-Pool zugewiesen haben!
+oih_dhcp_pool_unregistered_temporary {
+    if(!&control:Pool-Name && !&reply:DHCP-Your-IP-Address && &control:OIH-API-Device-Id == 0) {
+        update control {
+            &Pool-Name := "oih_user_10_149_99"
+            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, 69)}"
+        }
+        updated
+    }
+    else {
+        noop
+    }
+}
+
 #
 # Set OIH-API-Device-MAC string to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
 #
@@ -30,6 +47,7 @@ oih_api_mac_dhcp {
     }
 }
 
+# TODO split this up so we can check for blocked user independently of getting an IP
 oih_api_set_attributes {
     update control {
         OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
@@ -94,6 +112,97 @@ oih_api_set_attributes {
 
 }
 
+# TODO figure out return codes
+# e.g. reject when user/pass wrong; userlock when user is blocked
+# so we can put them in oih-guest later
+# however, this would be tricky on other tuermeroam proxies
+oih_api_auth {
+    update control {
+        OIH-API-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+        OIH-API-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+    }
+    if (&control:OIH-API-User-Status == 'block') {
+        # gesperrte user
+        update outer.reply {
+            Reply-Message = &control:OIH-API-User-Block-Message
+        }
+        reject
+    }
+}
+
+oih_api_user_auth {
+    update control {
+        OIH-API-User-Id := "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
+    }
+
+    if (&control:OIH-API-User-Id == 0) {
+        # I'm getting 'ERROR: Mapping "User not found" -> "Reply-Message" invalid in this context' here
+        # just return notfound or sth
+        # user doesn't exist
+        update outer.reply {
+            Reply-Message = "User not found"
+        }
+        reject
+    }
+
+    oih_api_auth
+
+    update control {
+        # dies wird von eap benutzt
+        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
+    }
+}
+
+oih_api_mac_auth {
+    update control {
+        OIH-API-Device-Id := "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+    }
+    if (&control:OIH-API-Device-Id == 0) {
+        # device not found
+        reject
+    }
+    else {
+        update control {
+            OIH-API-User-Id := "%{sql:SELECT user FROM `device` WHERE id = %{control:OIH-API-Device-Id}}"
+        }
+    }
+
+    oih_api_auth
+}
+
+oih_api_post_auth {
+# for mac auth we'll probably have to put this in the auth section and then check if the user is blocked
+    update control {
+        &OIH-API-Device-Id := "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+    }
+
+    if (&control:OIH-API-Device-Id == 0) {
+        # device not found
+        update control {
+            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, %{control:OIH-API-User-Id})}"
+        }
+    }
+    else {
+        # device has a new owner, change it to NAT and remove all previous IP assignments
+        # TODO maybe protect all users with room = -1 to get their MACs stolen
+        if (&control:OIH-API-User-Id != "%{sql:SELECT user FROM `device` WHERE id = %{control:OIH-API-Device-Id}}") {
+            update control {
+                OIH-API-Return = "%{sql:UPDATE `device` SET user = %{control:OIH-API-User-Id}, nat = 1, description = '' WHERE id = %{control:OIH-API-Device-Id}}"
+            }
+            update control {
+                OIH-API-Return = "%{sql:UPDATE `ipv4` SET device = NULL WHERE device = %{control:OIH-API-Device-Id}}"
+            }
+        }
+    }
+}
+
+oih_api_post_auth.access_reject {
+# TBD maybe we should keep the device and just set user=NULL and nat=1 so the description stays
+    update control {
+        OIH-API-Return = "%{sql:DELETE FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+    }
+}
+
 oih_api_set_dhcp {
     # these only get updated if the OIH-API-* attributes exist
     update control {
@@ -145,15 +254,3 @@ oih_api_set_dhcp_subnet {
     }
 }
 
-oih_dhcp_pool_unregistered_temporary {
-    if(!&control:Pool-Name && !&reply:DHCP-Your-IP-Address && &control:OIH-API-Device-Id == 0) {
-        update control {
-            &Pool-Name := "oih_user_10_149_99"
-            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, 69)}"
-        }
-        updated
-    }
-    else {
-        noop
-    }
-}

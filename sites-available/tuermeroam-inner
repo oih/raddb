@@ -131,35 +131,7 @@ authorize {
 
     # set OIH-API-Device-MAC to Calling-Station-Id in aa:bb:cc:dd:ee:ff format
     oih_api_mac_radius
-
-# oih-api sql
-    update control {
-        OIH-API-User-Id = "%{sql:SELECT id FROM `user` WHERE radius_user = '%{Stripped-User-Name}'}"
-    }
-
-    # TODO die Reihenfolge hier ist irgendwie komisch. Wenn User-Name korrekt, aber das Passwort falsch ist, wird die block_message ausgegeben.
-    if (&control:OIH-API-User-Id == 0) {
-        # 0 = kein Ergebnis
-        update outer.reply {
-            Reply-Message = "Wrong username or password"
-        }
-        reject
-    }
-    update control {
-        OIH-API-User-Status = "%{sql:SELECT status FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-        OIH-API-User-Block-Message = "%{sql:SELECT block_message FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-    }
-    if (&control:OIH-API-User-Status != "active") {
-        # gesperrte user
-        update outer.reply {
-            Reply-Message = &control:OIH-API-User-Block-Message
-        }
-        reject
-    }
-    update control {
-        # dies wird von eap benutzt
-        Cleartext-Password := "%{sql:SELECT radius_password FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-    }
+    oih_api_user_auth
 
 	#
 	#  This module takes care of EAP-MSCHAPv2 authentication.
@@ -331,6 +303,7 @@ session {
 #  then update the inner-tunnel reply.
 post-auth {
     oih_api_mac_radius
+    oih_api_post_auth
 	#  If you want privacy to remain, see the
 	#  Chargeable-User-Identity attribute from RFC 4372.
 	#  If you want to use it just uncomment the line below.
@@ -408,34 +381,7 @@ post-auth {
 		update {
 			&outer.session-state: += &reply:
 		}
-	}
 
-    update control {
-        # we don't need any of these (maybe the room number for whatever)
-        #OIH-API-User-Email = "%{sql:SELECT email FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-        #OIH-API-User-Firstname = "%{sql:SELECT firstname FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-        #OIH-API-User-Lastname = "%{sql:SELECT name FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-        OIH-API-Room-Number = "%{sql:SELECT room FROM `user` WHERE id = %{control:OIH-API-User-Id}}"
-        OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
-    }
-    
-    if (&control:OIH-API-Device-Id == 0) {
-        update control {
-            OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, %{control:OIH-API-User-Id})}"
-        }
-        update control {
-            OIH-API-Device-Id = "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
-        }
-    }
-    else {
-        if (&control:OIH-API-User-Id != "%{sql:SELECT user FROM `device` WHERE id = %{control:OIH-API-Device-Id}}") {
-            update control {
-                OIH-API-Return = "%{sql:UPDATE `device` SET user = %{control:OIH-API-User-Id}, nat = 1, description = '' WHERE id = %{control:OIH-API-Device-Id}}"
-            }
-            update control {
-                OIH-API-Return = "%{sql:UPDATE `ipv4` SET device = NULL WHERE device = %{control:OIH-API-Device-Id}}"
-            }
-        }
     }
     # this has to be separate, otherwise control:OIH-API-Device-Id won't be expanded correctly.
     # we don't need NAT in radius post-auth
@@ -455,10 +401,7 @@ post-auth {
 #		-sql
 		attr_filter.access_reject
 
-        # delete device from db
-        update control {
-            OIH-API-Return = "%{sql:DELETE FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
-        }
+        oih_api_post_auth.access_reject
 
 		#
 		#  Let the outer session know which module failed, and why.

@@ -10,6 +10,7 @@ listen {
 }
 
 authorize {
+    oih_api_user_auth
 }
 
 authenticate {
