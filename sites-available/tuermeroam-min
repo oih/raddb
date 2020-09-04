@@ -43,8 +43,8 @@ authorize {
     oih_api_mac_radius
     if (!EAP-Message) {
         # ACHTUNG! NUR ZUM TEST, DIESE ZEILE SPÄTER LÖSCHEN!
-        #accept # test mac auth
-        reject
+        accept # test mac auth
+        #reject
         # TODO: handle MAC auth
         oih_api_mac_auth
         return
