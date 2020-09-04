@@ -25,7 +25,12 @@ tuerme_set_vlan {
         }
         case {
             # TEST!! Ändern auf 103 für oih-guest fallback!!
-            update reply { Tunnel-Private-Group-ID := 263 }
+            if (&control:OIH-API-Device-MAC == "00:02:d1:16:cd:df") {
+              update reply { Tunnel-Private-Group-ID := 100 }
+            }
+            else {
+              update reply { Tunnel-Private-Group-ID := 263 }
+            }
         }
     }
 }
