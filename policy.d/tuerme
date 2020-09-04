@@ -23,5 +23,9 @@ tuerme_set_vlan {
         case "farue.rwth-aachen.de" {
             update reply { Tunnel-Private-Group-ID := 264 }
         }
+        case {
+            # TEST!! Ändern auf 103 für oih-guest fallback!!
+            update reply { Tunnel-Private-Group-ID := 263 }
+        }
     }
 }
