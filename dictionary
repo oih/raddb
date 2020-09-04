@@ -59,6 +59,7 @@ ATTRIBUTE   OIH-API-Room-Number     3007    integer
 ATTRIBUTE   OIH-API-Device-Id       3008    integer
 ATTRIBUTE   OIH-API-Device-MAC      3009    string
 ATTRIBUTE   OIH-API-Device-NAT      3010    integer
-ATTRIBUTE   OIH-API-IPv4-Id         3011    integer
-ATTRIBUTE   OIH-API-IPv4-Pool       3012    string
-ATTRIBUTE   OIH-API-IPv4-Addr       3013    ipaddr
+ATTRIBUTE   OIH-API-Device-Description  3011    string
+ATTRIBUTE   OIH-API-IPv4-Id         3012    integer
+ATTRIBUTE   OIH-API-IPv4-Pool       3013    string
+ATTRIBUTE   OIH-API-IPv4-Addr       3014    ipaddr

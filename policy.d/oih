@@ -10,6 +10,15 @@ oih_dhcp_pool_unregistered_temporary {
             &Pool-Name := "oih_user_10_149_99"
             OIH-API-Return = "%{sql:INSERT INTO `device` (mac, nat, user) VALUES ('%{control:OIH-API-Device-MAC}', 1, 69)}"
         }
+        update control {
+            OIH-API-Device-ID := "%{sql:SELECT id FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+            OIH-API-Device-Description := "%{sql:SELECT description FROM `device` WHERE mac = '%{control:OIH-API-Device-MAC}'}"
+        }
+        if (!&control:OIH-API-Device-Description || (&control:OIH-API-Device-Description == "")) {
+            update control {
+                OIH-API-Return = "%{sql:UPDATE `device` SET description = 'Hostname: %{request:DHCP-Hostname}' WHERE id = %{control:OIH-API-Device-ID}}"
+            }
+        }
         updated
     }
     else {
