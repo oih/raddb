@@ -55,7 +55,7 @@ ATTRIBUTE   OIH-API-User-Lastname   3003    string
 ATTRIBUTE   OIH-API-User-Email      3004    string
 ATTRIBUTE   OIH-API-User-Status     3005    string
 ATTRIBUTE   OIH-API-User-Block-Message  3006    string
-ATTRIBUTE   OIH-API-Room-Number     3007    integer
+ATTRIBUTE   OIH-API-Room-Number     3007    string
 ATTRIBUTE   OIH-API-Device-Id       3008    integer
 ATTRIBUTE   OIH-API-Device-MAC      3009    string
 ATTRIBUTE   OIH-API-Device-NAT      3010    integer
