@@ -1,4 +1,4 @@
-*.pem
+server.pem
 *.key
 *.crt
 *.csr
