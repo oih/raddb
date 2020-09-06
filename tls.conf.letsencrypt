@@ -1,0 +1,27 @@
+# cp tls.conf.letsencrypt tls.conf
+tls-config tls-common {
+  private_key_file = /etc/letsencrypt/live/oih.rwth-aachen.de/privkey.pem
+  certificate_file = /etc/letsencrypt/live/oih.rwth-aachen.de/fullchain.pem
+  dh_file = ${certdir}/dh
+  fragment_size = 1024
+  cipher_list = "HIGH"
+  tls_min_version = "1.2"
+  tls_max_version = "1.2"
+  ecdh_curve = "prime256v1"
+  cache {
+    enable = no
+    lifetime = 24 # hours
+    store {
+      Tunnel-Private-Group-Id
+    }
+  }
+  verify {
+  }
+
+  ocsp {
+    enable = yes
+    override_cert_url = no
+#    url = "http://127.0.0.1/ocsp/"
+    url = "http://ocsp.int-x3.letsencrypt.org/"
+  }
+}
