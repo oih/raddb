@@ -254,7 +254,8 @@ oih_api_set_dhcp_subnet {
     elsif (&reply:DHCP-Your-IP-Address < 10.0/16) {
         update reply {
             &DHCP-Subnet-Mask = 255.255.0.0
-            &DHCP-IP-Address-Lease-Time = 86400
+            # &DHCP-IP-Address-Lease-Time = 86400
+            &DHCP-IP-Address-Lease-Time = 7200 # this would have to be changed in dhcp_sqlippool
             &DHCP-DHCP-Server-Identifier = 10.0.80.80
         }
         updated

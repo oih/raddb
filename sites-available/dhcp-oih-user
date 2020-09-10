@@ -145,7 +145,6 @@ dhcp DHCP-Discover {
     
     oih_api_set_dhcp
 
-    oih_dhcp_pool_unregistered_temporary
     oih_dhcp_hostname_description
 
 	dhcp_sqlippool
@@ -172,7 +171,6 @@ dhcp DHCP-Request {
     oih_api_set_dhcp
     # TODO check for notfound
 
-    oih_dhcp_pool_unregistered_temporary
     oih_dhcp_hostname_description
 
 	#  Do a simple mapping of MAC to assigned IP.
