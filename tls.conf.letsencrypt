@@ -5,7 +5,12 @@ tls-config tls-common {
   dh_file = ${certdir}/dh
   fragment_size = 1024
   cipher_list = "HIGH"
-  tls_min_version = "1.2"
+  disable_tlsv1_2 = no
+  # older clients compatibility:
+  disable_tlsv1_1 = no
+  disable_tlsv1 = no
+  tls_min_version = "1.0"
+
   tls_max_version = "1.2"
   ecdh_curve = "prime256v1"
   cache {
